@@ -154,7 +154,7 @@ ALL.TRANSSCALED[,numeric.columns] <- as.data.frame( scale(ALL.TRANSSCALED[,numer
 ##Just scaling
 ALL.SCALED <- ALL
 column.classes <- unlist(lapply(ALL.SCALED,FUN=class))  #Get classes of each column
-numeric.columns <- which(column.classes %in% c("numeric","integer"))  #Positions of numerical volumns
+numeric.columns <- which(column.classes %in% c("numeric","integer"))  #Positions of numerical columns
 ALL.SCALED[,numeric.columns] <- as.data.frame( scale(ALL.SCALED[,numeric.columns]) )
 
 
