@@ -1,4 +1,4 @@
-#Updated loop by: Kalonji Woods for BAS 279 Case 2 Fall 2017
+#Updated loop by: Kal Woods for BAS 279 Case 2 Fall 2017
 
 
 #Initialize empty sets for the pertinent vectors
