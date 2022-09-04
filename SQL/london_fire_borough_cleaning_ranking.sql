@@ -1,8 +1,3 @@
---Check count of null entries anywhere in table; rerun as select * if count > 0
-SELECT COUNT(*)
-FROM `bigquery-public-data.london_fire_brigade.fire_brigade_service_calls`
-WHERE NOT (`bigquery-public-data.london_fire_brigade.fire_brigade_service_calls` IS NOT NULL);
-
 --Display all rows where important columns are null
 SELECT *
 FROM `bigquery-public-data.london_fire_brigade.fire_brigade_service_calls`
