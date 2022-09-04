@@ -1,5 +1,3 @@
-https://msdn.microsoft.com/en-us/vba/access-vba/articles/form-error-event-access
-
 /* Report 1:
 This report gives the ability to look up a customer by their last name and shows all relevant information
 about them in the database. The database generates the unique customer ID, first name, last name, 
