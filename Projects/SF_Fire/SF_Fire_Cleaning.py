@@ -7,8 +7,6 @@ import re
 # import the data, create a dataframe, create a copy of the dataframe to write cleaned data to
 url = 'https://data.sfgov.org/api/views/wr8u-xric/rows.csv'
 dates = ['Incident Date', 'Alarm DtTm', 'Arrival DtTm', 'Close DtTm']
-fire_incidents = pd.read_csv(url, dtype=dtypes, parse_dates=dates) # parse dates as datetime objects
-fi_copy = fire_incidents
 
 
 # add dtypes for columns so that pandas can run efficiently
@@ -42,6 +40,11 @@ dtypes = {'Incident Number': 'Int64', 'Exposure Number': 'Int64', 'ID': 'Int64',
           'Number of Sprinkler Heads Operating': 'Int64', 'Supervisor District': 'Int64',
           'neighborhood_district': 'str',
           'point': 'object'}
+
+
+#create initial dataframe
+fire_incidents = pd.read_csv(url, dtype=dtypes, parse_dates=dates) # parse dates as datetime objects
+fi_copy = fire_incidents
 
 
 ignore = ['Incident Date', 'Address','zipcode', 'Alarm DtTm', 'Arrival DtTm', 'Close DtTm', 'point',
@@ -116,6 +119,14 @@ for entry in standardize:
 fi_copy.rename(columns={'Automatic Extinguishing Sytem Failure Reason':'Automatic Extinguishing System Failure Reason',
 'Automatic Extinguishing Sytem Type':'Automatic Extinguishing System Type',
 'Automatic Extinguishing Sytem Perfomance':'Automatic Extinguishing System Perfomance',
-'No Flame Spead':'No Flame Spread', 'neighborhood_district':'Neighborhood District'}, inplace=True)
+'No Flame Spead':'No Flame Spread', 'neighborhood_district':'Neighborhood District', 'zipcode':'Zip Code'}, inplace=True)
 
 fi_copy.columns
+
+
+# check numeric columns for reasonable max and min values
+for column in fire_incidents.columns:
+    if fire_incidents[column].dtype != 'object':
+        low = fire_incidents[column].min()
+        high = fire_incidents[column].max()
+        print(f'{column}\n min: {low} max: {high}')
