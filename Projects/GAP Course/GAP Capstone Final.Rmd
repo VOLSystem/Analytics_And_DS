@@ -1,0 +1,218 @@
+---
+title: "Google Data Analytics Professional Capstone"
+author: "Kal Woods"
+date: "2022-10-16"
+output: 
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(lubridate)
+library(extrafont)
+loadfonts(device = "win", quiet = TRUE)
+```
+
+
+## Purpose
+
+[Bellabeat](https://bellabeat.com/) is a health-focused smart products company aimed at empowering women with knowledge about their own health and habits. Founded in 2013 with a drive to develop beautifully designed technology for its core market, it has grown rapidly and stood out within its segment.
+
+![](https://bellabeat.com/wp-content/uploads/2020/10/bb_41.jpg)
+![](https://urbanmenoutfits.com/wp-content/uploads/2020/06/bellabeat-smart-jewelry-featured-image.jpg.webp)
+
+Bellabeat wants to analyze smart device usage in order to gain insight into how consumers use non-Bellabeat smart devices and get high-level recommendations that can inform marketing strategies.
+
+## Data
+
+Publicly available FitBit Fitness Tracker Data from [Kaggle](https://www.kaggle.com/arashnic/fitbit) obtained via Amazon Mechanical Turk was used for analysis. Participants are identified across the data sets by unique id.
+
+## Cleaning and Initial Insights
+
+While there were 18 CSVs within the data set, it was best to limit the analysis to those that contained a large enough number of unique users to provide relevant insight. Some of the CSVs are also simply more granular forms of others, i.e., Minute Intensities vs Hourly Intensities vs Daily Intensities. Those chosen represented:
+
+* Daily Activity  
+* Daily Intensities  
+* Daily Sleep
+
+Creation of data frames:
+
+
+```{r}
+daily_activity <- read.csv("dailyActivity_merged.csv")
+daily_intensities <- read.csv("dailyIntensities_merged.csv")
+daily_sleep <- read.csv("sleepDay_merged.csv")
+```
+
+
+Number of unique users per set:
+```{r}
+df_list <- Filter(function(x) is(x, "data.frame"), mget(ls()))
+lapply(df_list, function(x) {n_distinct(x$Id)})
+```
+
+Check for missing data:
+```{r missing data}
+lapply(df_list, function(x) {apply(is.na(x), 2, sum)})
+```
+
+
+Summaries of data sets:
+```{r}
+lapply(df_list, function(x) {summary(x)})
+```
+
+Setting up certain summary information as tables offers an easier to read format and will make for better exporting to a simplified presentation.
+
+```{r daily activity table, echo=FALSE, message=FALSE}
+daily_activity_summary <- daily_activity %>% 
+  summarise("Average Daily Steps" = mean(TotalSteps),
+            "Average Daily Miles" = mean(TotalDistance),
+            "Average Logged Activities Miles" = mean(LoggedActivitiesDistance),
+            "Average Daily Calories Burned" = mean(Calories)) %>% 
+            pivot_longer(cols = starts_with("average"), names_to = "measure")
+
+
+kable(daily_activity_summary, digits=2, format="html",  row.names=FALSE) %>% 
+  #kable_material_dark() %>% 
+  kable_styling(full_width=T, font_size=15, bootstrap_options=c("condensed")) %>% 
+  column_spec(column = 2) %>%
+  row_spec(row=0, bold = TRUE, background = "#33CCCC") %>% 
+  row_spec(row=1) %>% 
+  row_spec(row=2) %>% 
+  row_spec(row=3) %>%
+  row_spec(row=4, italic = TRUE, bold = TRUE, background = "#d3d3d3") 
+```
+
+One thing that stands out here and has been highlighted is the number of calories burned. The recommended daily allowance for calories is 2000. If as seen here on average most users were burning more than that allotment the tracker may have indeed been very effective in keeping users aware of their calorie use and helped them in burning more per day than they consumed, assuming a balanced diet.
+
+Seeing that so many participants met or exceeded the 2000 calorie mark it may be worthwhile to allow users to share when they hit milestones--not directly with calorie-to-calorie comparisons, but with friendly notifications of how many people in their circle have hit their daily, weekly, or monthly goals.
+
+![](https://images.unsplash.com/photo-1464198016405-33fd4527b89d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1103&q=80)
+
+
+
+```{r daily intensities table, echo=FALSE}
+daily_intensities_summary <- daily_intensities %>% 
+  summarise("Average Sedentary Minutes" = mean(SedentaryMinutes),
+            "Average Light Active Minutes" = mean(LightlyActiveMinutes),
+            "Average Moderately Active Minutes" = mean(FairlyActiveMinutes),
+            "Average Very Active Minutes" = mean(VeryActiveMinutes),
+            "Average Light Active Distance" = mean(LightActiveDistance),
+            "Average Moderately Active Distance" = mean(ModeratelyActiveDistance),
+            "Average Very Active Distance" = mean(ModeratelyActiveDistance)) %>% 
+            pivot_longer(cols = starts_with("average"), names_to = "measure")
+
+kable(daily_intensities_summary, digits=2, format="html",  row.names=FALSE) %>% 
+  kable_styling(full_width=T, font_size=15, bootstrap_options=c("condensed")) %>% 
+  column_spec(column = 2) %>%
+  row_spec(row=0, bold = TRUE, background = "#33CCCC") %>% 
+  row_spec(row=1, italic = TRUE, bold = TRUE, background = "#d3d3d3") %>% 
+  row_spec(row=2) %>% 
+  row_spec(row=3) %>%
+  row_spec(row=4, italic = TRUE, bold = TRUE, background = "#d3d3d3") %>% 
+  row_spec(row=5) %>%
+  row_spec(row=6) %>%
+  row_spec(row=7)
+```
+```{r daily sleep table, echo=FALSE}
+daily_sleep_summary <- daily_sleep %>% 
+  summarize("Average Daily Sleep Sessions" = mean(TotalSleepRecords),
+            "Average Daily Sleep Minutes" = mean(TotalMinutesAsleep),
+            "Average Daily Sleep Hours" = mean(TotalMinutesAsleep)/60,
+            "Average Daily Minutes In Bed" = mean(TotalTimeInBed),
+            "Average Daily Hours In Bed" = mean(TotalTimeInBed)/60) %>% 
+            pivot_longer(cols = starts_with("average"), names_to = "measure")
+
+kable(daily_sleep_summary, digits=2, format="html",  row.names=FALSE) %>% 
+  kable_styling(full_width=T, font_size=15, bootstrap_options=c("condensed")) %>% 
+  column_spec(column = 2) %>%
+  row_spec(row=0, bold = TRUE, background = "#33CCCC") %>% 
+  row_spec(row=1, italic = TRUE, bold = TRUE, background = "#d3d3d3") %>% 
+  row_spec(row=2) %>% 
+  row_spec(row=3) %>% 
+  row_spec(row=4) %>% 
+  row_spec(row=5)
+```
+
+
+
+
+
+## Summary of Tables
+
+On average participants spent:  
+
+* 3.2 hours per day engaged in light activity  
+* 15 minutes per day on moderate activity and 20 minutes per day engaged in very heavy activity  
+* 16 hours per day sedentary, including 7.64  hours total time in bed with 6.99 of those hours coming as daily sleep.  
+
+Other findings:
+
+* Participants didn't appear to take advantage of the Logged Activities feature. It may be worth investigating whether potential users don't desire such a feature or simply need to be made aware of it.  
+* Average Daily Sleep Sessions may indicate that few participants have time for or choose to nap daily. Helping to encourage a regular sleep pattern through Bellabeat wearables and related apps could be a useful strategy to test.  
+
+## Additional Points of Interest
+
+When are users most active? This question could provide useful facets of information about potential customers who would be interested in fitness trackers.
+
+```{r activity histogram blend, echo=FALSE, message=FALSE, warning=FALSE}
+# theme(text=element_text())
+read.csv("hourlyIntensities_merged.csv") %>%
+  drop_na() %>% 
+  mutate(hour = format(mdy_hms(ActivityHour), '%H:%M')) %>% 
+  group_by(hour) %>% 
+  summarize(average_intensity = mean(TotalIntensity)) %>% 
+  ggplot(aes(x=hour, y=average_intensity, alpha=0.05)) + geom_histogram(stat = "identity", fill="pink", show.legend = FALSE, color="black") + labs(title = "Average Activity by Hour", x="Hour", y="Average Total Intensity") +
+  geom_point(color="black",size=3, alpha=0.7) + geom_point(color="#33CCCC", size=2,alpha=0.9) +
+  theme(plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90),
+        text = element_text(family = "Century Gothic"))
+```
+
+Average Intensity peaks from 5-7PM with a lower peak from 12-2PM. Perhaps combining this type of data further with personas derived from customer profiles that align with others in their segment who achieved measurable results could provide positive outcomes for new users. Data like this could easily be updated daily or weekly for wearers to help them see how they're performing and if they're on track for goals. This would also help customers see if they're keeping a regular schedule from day to day or week to week to sustain their momentum.
+
+Do those who are more active burn more calories regardless of intensity level? Health professionals and fitness instructors recommend that people should be active daily even if that activity isn't strenuous. Perhaps the tracker is able to show the simple relationship between more movement of any kind, including daily steps taken, having a positive effect on calories burned.
+
+Let's look at the correlation coefficients of different tests, then a scatter plot of calories burned against steps taken.
+
+```{r correlations, warning=FALSE}
+cor.test(daily_activity$TotalSteps, daily_activity$Calories, method = "pearson")
+cor.test(daily_activity$TotalSteps, daily_activity$Calories, method = "kendall")
+cor.test(daily_activity$TotalSteps, daily_activity$Calories, method = "spearman")
+```
+
+
+```{r calories scatter, echo=FALSE, message=FALSE, warning=FALSE}
+daily_activity %>% 
+  drop_na() %>% 
+  ggplot(aes(x=TotalSteps, y=Calories)) + geom_point(color="black",size=3, alpha=0.7) + geom_point(color="pink", size=2,alpha=0.9) + geom_smooth(method = lm, color="#33CCCC") + labs(title = "Calories Burned vs Steps", x="Daily Steps", y="Total Calories") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(family = "Century Gothic"))
+```
+
+All three tests for correlation as well as the scatter plot with a logistic regression line of best fit show a positive relationship between the number of steps taken and total calories burned. P-values well below 0.05 indicate statistical significance. One would expect that someone who simply takes more steps per day would be likely show more total calories burned than someone who took fewer. Simple is a great starting point when it comes to getting people to take up and stay consistent with a daily activity routine. 
+
+![](https://images.unsplash.com/photo-1611569518992-0927098278b7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80)
+
+## Recommendations
+
+Bellabeat can combine the above findings with their own user-informed research to develop a marketing strategy focused on their target audience of female customers. Collecting similar data that provides better insights for their users could be useful to offer feedback that actively engages each individual.
+
+Specific Recommendations Summary:  
+
+* Create ad campaigns as well as device & app-related designs that help create awareness of core features users might not otherwise note. For instance, display information on activity tracking and offer optional "get on the move"/sedentary duration reminders during device setup. Conduct A/B tests to see if such campaigns & feature awareness provide better results and more consistent device use.  
+* Consider surveying customers about their sleep habits and trial interest and engagement with "sleep companion" features. Present napping recommendation for users whose activity patterns suggest the need.  
+* Highlight users' most active hours to further drive engagement and help them establish activity routines that align with their goals.
+* Provide shared highlights via available devices & apps. Create features that encourage better together ideals of moving forward as a group focused on common goals and milestones without a scoreboard mentality.
+
+![](https://images.unsplash.com/photo-1495837174058-628aafc7d610?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80)
+
+############### Photos by [Bellabeat](https://bellabeat.com/), [Matt Heaton](https://unsplash.com/@mattisrad),  [Jennifer Coffin-Grey](https://unsplash.com/@jennifergrey), [Levi Guzman](https://unsplash.com/@homeschool)
